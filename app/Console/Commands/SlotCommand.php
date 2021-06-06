@@ -100,15 +100,53 @@ class SlotCommand extends Command
                 }
             }
 
-            if (true === $win && $win_matches > 1) {
+            if (true === $win && $win_matches >= 3) {
                 $lines_winnings[$line_id] = ['win_matches' => $win_matches];
             }
         }
 
+        $total_win = 0;
+
+        $paylines = [];
         if (count($lines_winnings) > 0) {
-            dump($normalized_field);
-            dump($lines_winnings);
+
+            foreach ($lines_winnings as $kline => $line_winning) {
+                $total_win += $this->getWinCoefficient($line_winning['win_matches']) * $bet;
+                $paylines[] = [implode(' ', $win_lines[$kline]) => $line_winning['win_matches']];
+            }
         }
+
+        /**
+         * Prep final data
+         */
+
+        $board = $normalized_field;
+
+
+        $bet_amount = $bet;
+
+
+        $response = compact('board', 'paylines', 'bet_amount', 'total_win');
+
+        /**
+         * Will just dump response for debugging
+         */
+
+        dump($response);
+
+        return json_encode($response, JSON_PRETTY_PRINT);
+
+    }
+
+    protected function getWinCoefficient(int $matches): float
+    {
+        $mapping_winning = [
+            3 => 1.2,
+            4 => 2,
+            5 => 10,
+        ];
+
+        return $mapping_winning[$matches];
     }
 
     protected function generateSymbol(): string
