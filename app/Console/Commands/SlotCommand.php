@@ -60,43 +60,59 @@ class SlotCommand extends Command
 
         foreach ($win_lines as $line_id => $win_line) {
             $win = false;
-            $win_matches = 0;
+            $win_matches = 1;
+            $first_elem = null;
+            $line_broken = false;
+
 
             foreach ($win_line as $k_line_pos => $slot_pos) {
-
-                if (0 === $k_line_pos) {
-                    $next = $win_line[$k_line_pos + 1];
-
-                    if ($normalized_field[$slot_pos] === $normalized_field[$next]) {
-                        $win = true;
-                        $win_matches = 1;
-                    } else {
-                        continue;
-                    }
-                } elseif (count($win_line) - 1 === $k_line_pos) {
-                    /**
-                     * Latest pos just let check if we have 4 win matches and current slot is same as first - increase
-                     * win matches
-                     */
-
-                    if (
-                        4 === $win_matches &&
-                        $normalized_field[$slot_pos] === $normalized_field[$win_line[0]]
-                    ) {
-                        $win_matches++;
-                    }
-                } else {
-                    if (true === $win) {
-                        if (
-                            $normalized_field[$slot_pos] === $normalized_field[$win_line[0]] &&
-                            $normalized_field[$slot_pos - 1] === $normalized_field[$win_line[0]]
-                        ) {
-                            $win_matches++;
-                        } else {
-                            continue;
-                        }
-                    }
+                if ($k_line_pos === 0) {
+                    $first_elem = $normalized_field[$slot_pos];
+                    continue;
                 }
+
+                if (false === $line_broken && $first_elem === $normalized_field[$slot_pos]) {
+                    $win = true;
+                    $win_matches++;
+                }
+
+                if (false === $line_broken && $first_elem !== $normalized_field[$slot_pos]) {
+                    $line_broken = true;
+                }
+
+//                if (0 === $k_line_pos) {
+//                    $next = $win_line[$k_line_pos + 1];
+//
+//                    if ($normalized_field[$slot_pos] === $normalized_field[$next]) {
+//                        $win = true;
+//                        $win_matches = 1;
+//                    } else {
+//                        continue;
+//                    }
+//                } elseif (count($win_line) - 1 === $k_line_pos) {
+//                    /**
+//                     * Latest pos just let check if we have 4 win matches and current slot is same as first - increase
+//                     * win matches
+//                     */
+//
+//                    if (
+//                        4 === $win_matches &&
+//                        $normalized_field[$slot_pos] === $normalized_field[$win_line[0]]
+//                    ) {
+//                        $win_matches++;
+//                    }
+//                } else {
+//                    if (true === $win) {
+//                        if (
+//                            $normalized_field[$slot_pos] === $normalized_field[$win_line[0]] &&
+//                            $normalized_field[$slot_pos - 1] === $normalized_field[$win_line[0]]
+//                        ) {
+//                            $win_matches++;
+//                        } else {
+//                            continue;
+//                        }
+//                    }
+//                }
             }
 
             if (true === $win && $win_matches >= 3) {
@@ -133,7 +149,7 @@ class SlotCommand extends Command
 
         dump($response);
 
-        return json_encode($response, JSON_PRETTY_PRINT);
+        return json_encode($response, JSON_PRETTY_PRINT); // i don't know why but maybe it will be helpful
 
     }
 
@@ -151,7 +167,9 @@ class SlotCommand extends Command
     protected function generateSymbol(): string
     {
         $symbols_mapping = $this->getSymbolsMapping();
+        //count($symbols_mapping) - 1
         $random_element = $symbols_mapping[random_int(0, count($symbols_mapping) - 1)];
+
 
         if (3 === $random_element['min_for_reward'] && random_int(1, 5) > 2) {
             return $this->generateSymbol();
