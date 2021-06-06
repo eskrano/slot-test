@@ -64,10 +64,6 @@ class SlotCommand extends Command
 
             foreach ($win_line as $k_line_pos => $slot_pos) {
 
-                if (2 === $k_line_pos) {
-                    continue;
-                }
-
                 if (0 === $k_line_pos) {
                     $next = $win_line[$k_line_pos + 1];
 
@@ -92,9 +88,12 @@ class SlotCommand extends Command
                 } else {
                     if (true === $win) {
                         if (
-                            $normalized_field[$slot_pos] === $normalized_field[$win_line[0]]
+                            $normalized_field[$slot_pos] === $normalized_field[$win_line[0]] &&
+                            $normalized_field[$slot_pos - 1] === $normalized_field[$win_line[0]]
                         ) {
                             $win_matches++;
+                        } else {
+                            continue;
                         }
                     }
                 }
